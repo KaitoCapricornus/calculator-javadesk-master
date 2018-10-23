@@ -45,78 +45,68 @@ public class Calculate {
         if (process || reset) {
             text.setText("0");
             process = false;
-            {
-                reset = false;
-            }
-            if (!text.getText().contains(".")) {
-                text.setText(text.getText() + ".");
-            }
+            reset = false;
+        }
+        if (!text.getText().contains(".")) {
+            text.setText(text.getText() + ".");
         }
     }
 
-    //MR: lấy ra giá trị trong bộ nhớ 
-    //Nhấn M+ / M- => MR đổi màu
-    //Nhấn MC: => MR về màu cũ
-    public void pressMR() {
-        text.setText(memory + "");
-        isMR = true;
-    }
-
-//    public boolean isMemory() {
-//        return pressMR() != null; 
-//    }
-//    public BigDecimal changeValue() {
-//        if (operator == 1 || operator == 2) {
-//            return new BigDecimal("0");
-//        } else {
-//            return new BigDecimal("1");
-//        }
-//    }
     public void pressClear() {
         firstNumber = new BigDecimal("0");
         secondNumber = new BigDecimal("0");
         //memory = new BigDecimal("0");
         operator = -1;
     }
-    
+
     public BigDecimal getValue() {
         if (isMR) {
             return memory;
         }
         String value = text.getText();
-        BigDecimal temp = new BigDecimal(value);
-        return temp;
 
+        BigDecimal temp;
+        try {
+            temp = new BigDecimal(value);
+        } catch (Exception e) {
+            return firstNumber;
+        }
+        return temp;
     }
 
     public void calculate() {
-        try {
-            if (!process) {
-                if (operator == -1) {
-                    firstNumber = getValue();
-                } else {
-                    secondNumber = getValue();
-                    switch (operator) {
-                        case 1:
-                            firstNumber = firstNumber.add(secondNumber);
-                            break;
-                        case 2:
-                            firstNumber = firstNumber.subtract(secondNumber);
-                            break;
-                        case 3:
-                            firstNumber = firstNumber.multiply(secondNumber);
-                            break;
-                        case 4:
+        if (!process) {
+            if (operator == -1) {
+                firstNumber = getValue();
+            } else {
+                secondNumber = getValue();
+                switch (operator) {
+                    case 1:
+                        // to add value
+                        firstNumber = firstNumber.add(secondNumber);
+                        break;
+                    case 2:
+                        // to sub value
+                        firstNumber = firstNumber.subtract(secondNumber);
+                        break;
+                    case 3:
+                        // to multi value
+                        firstNumber = firstNumber.multiply(secondNumber);
+                        break;
+                    case 4:
+                        // to divide value
+                        if (secondNumber.toString().equals("0")) {
+                            text.setText("ERROR");
+                            process = false;
+                            return;
+                        } else {
                             firstNumber = firstNumber.divide(secondNumber);
                             break;
-                    }
+                        }
                 }
-                text.setText(firstNumber + "");
-                process = true;
             }
-        } catch (Exception e) {
-            reset = true;
-            text.setText("ERROR");
+            text.setText(firstNumber + "");
+            process = true;
         }
 
     }
@@ -131,61 +121,51 @@ public class Calculate {
     }
 
     public void pressNegate() {
-        try {
-            pressResult();
-            text.setText(getValue().negate() + "");
-            process = false;
-        } catch (Exception e) {
-            text.setText("ERROR");
-        }
+        pressResult();
+        text.setText(getValue().negate() + "");
+        process = false;
         reset = true;
     }
 
     public void pressSqrt() {
-        try {
-            pressResult();
-            BigDecimal result = getValue();
-            if (result.doubleValue() >= 0) {
-                String display = Math.sqrt(result.doubleValue()) + "";
-                if (display.endsWith(".0")) {
-                    display = display.replace(".0", "");
-                }
-                text.setText(display);
-                process = false;
-            } else {
-                text.setText("ERROR");
+        pressResult();
+        BigDecimal result = getValue();
+        if (result.doubleValue() >= 0) {
+            String display = Math.sqrt(result.doubleValue()) + "";
+            if (display.endsWith(".0")) {
+                display = display.replace(".0", "");
             }
-        } catch (Exception e) {
+            text.setText(display);
+            process = false;
+        } else {
             text.setText("ERROR");
         }
         reset = true;
     }
 
     public void pressPercent() {
-        try {
-            pressResult();
-            text.setText((getValue().doubleValue()) / 100 + "");
+        pressResult();
+        text.setText((getValue().doubleValue()) / 100 + "");
+        process = false;
+        reset = true;
+    }
+
+    public void pressInvert() {
+        pressResult();
+        double result = getValue().doubleValue();
+        if (result != 0) {
+            text.setText((1 / result) + "");
             process = false;
-        } catch (Exception e) {
+        } else {
             text.setText("ERROR");
         }
         reset = true;
     }
 
-    public void pressInvert() {
-        try {
-            pressResult();
-            double result = getValue().doubleValue();
-            if (result != 0) {
-                text.setText((1 / result) + "");
-                process = false;
-            } else {
-                text.setText("ERROR");
-            }
-        } catch (Exception e) {
-            text.setText("ERROR");
-        }
-        reset = true;
+    public JTextField pressMR() {
+        text.setText(memory + "");
+        isMR = true;
+        return text;
     }
 
     //MC : xóa bỏ trong bộ nhớ xét memory =0
@@ -195,23 +175,15 @@ public class Calculate {
 
     //ấn số: => M+ : lưu giá trị đó vào memory
     public void pressMAdd() {
-        try {
-            memory = memory.add(getValue());
-            process = false;
-        } catch (Exception e) {
-            text.setText("ERROR");
-        }
-        reset = true;
+        memory = memory.add(getValue());
+        process = false;
+        text.setText("ERROR");
     }
-    
+
     //ấn số: => M- : lưu giá trị đối của nó vào memory
     public void pressMSub() {
-        try {
-            memory = memory.add(getValue().negate());
-            process = false;
-        } catch (Exception e) {
-            text.setText("ERROR");
-        }
+        memory = memory.add(getValue().negate());
+        process = false;
         reset = true;
     }
 }
